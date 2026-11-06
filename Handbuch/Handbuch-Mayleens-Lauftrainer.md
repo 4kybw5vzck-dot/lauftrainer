@@ -1,7 +1,7 @@
 ---
 title: "Mayleens Lauftrainer"
-subtitle: "Handbuch – iPad-Ausgabe: Einrichtung, Bedienung, Apple Watch und Datenschutz"
-version: "Version 2.0.0 · November 2026"
+subtitle: "Stolli · Handbuch – iPad-Ausgabe: Einrichtung, Bedienung, Apple Watch und Datenschutz"
+version: "Version 2.1.0 · November 2026"
 ---
 
 # Willkommen!
@@ -16,6 +16,7 @@ Der Lauftrainer ist eine **Web-App**: Du öffnest ihn einmal in Safari und legst
 
 - **Übersicht** mit persönlicher Begrüßung, deiner nächsten Einheit, dem Wochenplan und deinem Fortschritt.
 - **10-Wochen-Plan für Einsteigerinnen**: dreimal pro Woche Laufen & Gehen, dazu Kraft & Gleichgewicht, Yoga & Mobilität und zwei Ruhetage.
+- **Aufbau danach**: Schritt für Schritt bis **5 km**, dann **10 km** und schließlich **15 km** am Stück.
 - **Rückmeldung nach jeder Einheit** („leicht“, „passend“, „zu anstrengend“). Der Plan passt sich daran vorsichtig an.
 - Einheiten als **erledigt, übersprungen oder verschoben** markieren – ohne schlechtes Gewissen.
 - **Intervall-Timer** mit Signalton und Ansage für die Lauf-/Geh-Wechsel.
@@ -141,6 +142,21 @@ Unter **Verlauf** siehst du alle erledigten und übersprungenen Einheiten mit de
 ## Plan verlängern oder neu starten
 
 Unter **Einstellungen › Profil & Plan** kannst du deinen Namen ändern, den Plan um **vier Wochen verlängern** oder ihn **neu starten** – z. B. nach einer längeren Pause. Vor einem Neustart wird automatisch eine Sicherung angelegt.
+
+## Nach den 10 Wochen: 5 km, 10 km, 15 km
+
+Nach den zehn Wochen läufst du 30 Minuten am Stück. Wenn du den Plan verlängerst, geht es weiter – **eine Stufe pro Woche**, Verlängern geht beliebig oft:
+
+| Etappe | Stufen | Langer Lauf (Samstag) | Lockerer Lauf (Mo, Do) | ab Woche |
+|---|---|---|---|---|
+| Ziel **5 km** | 19–22 | 33 → 40 Min. | 30 Min. | 11 |
+| Ziel **10 km** | 23–29 | 45 → 75 Min. | 30 → 40 Min. | 15 |
+| Ziel **15 km** | 30–37 | 80 → 115 Min. | 40 → 50 Min. | 22 |
+
+- **Montag und Donnerstag** sind lockere Läufe, am **Samstag** kommt der lange Lauf. Kraft, Yoga und Ruhetage bleiben wie gewohnt.
+- Die **Ziel-Läufe** (Stufe 22, 29 und 37 am Samstag) sind mit 🎯 markiert. Die Minuten sind nur ein Richtwert: Lauf gemütlich, bis die Apple Watch 5, 10 oder 15 km zeigt. Bist du früher dort, darfst du aufhören.
+- Deine Rückmeldungen wirken genauso wie bisher: „zu anstrengend“ macht es leichter, zweimal „leicht“ etwas schneller.
+- Nach Stufe 37 bleibt der Plan dort – du hältst dann dein 15-km-Niveau.
 
 # Apple Watch anbinden
 

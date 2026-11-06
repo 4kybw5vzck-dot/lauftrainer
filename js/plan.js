@@ -1,5 +1,5 @@
 // Trainingsplan: Erzeugung der Einheiten und vorsichtige Anpassung der Laufstufen.
-import { WEEK_TEMPLATE, MAX_STAGE } from './data.js';
+import { WEEK_TEMPLATE, MAX_STAGE, BASE_STAGES } from './data.js';
 
 export const BASE_WEEKS = 10;
 export const EXTEND_WEEKS = 4;
@@ -41,9 +41,13 @@ export function fmtDateShort(iso) {
 }
 
 // ---------- Plan ----------
-/** Geplante Grundstufe für den n-ten Lauf (0-basiert). 30 Läufe in 10 Wochen, Stufe 18 zum Schluss. */
+/** Geplante Grundstufe für den n-ten Lauf (0-basiert).
+ *  Grundlagen: 30 Läufe in 10 Wochen, Stufe 18 zum Schluss.
+ *  Aufbau (ab Woche 11, nach Verlängern): eine Stufe pro Woche – 5 km, dann 10 km, dann 15 km. */
 export function plannedStage(runIndex) {
-  return Math.min(MAX_STAGE, 1 + Math.floor(runIndex * (MAX_STAGE - 1) / 26));
+  const baseRuns = BASE_WEEKS * 3;
+  if (runIndex < baseRuns) return Math.min(BASE_STAGES, 1 + Math.floor(runIndex * (BASE_STAGES - 1) / 26));
+  return Math.min(MAX_STAGE, BASE_STAGES + 1 + Math.floor((runIndex - baseRuns) / 3));
 }
 
 /** Alle Einheiten des Plans, sortiert nach (ggf. verschobenem) Datum. */

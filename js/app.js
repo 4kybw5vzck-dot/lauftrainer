@@ -2,7 +2,7 @@
 import * as db from './db.js';
 import {
   VERSION, TYPE_INFO, AREAS, EXERCISES, exerciseById, STRENGTH_PROGRAMS, YOGA_PROGRAM, QUOTES,
-  stageLabel, stageSegments, stageTotalMin, stageRunMin, MAX_STAGE,
+  stageLabel, stageSegments, stageTotalMin, stageRunMin, MAX_STAGE, stagePhase, stageIsGoal, LONG_RUN_DOW,
 } from './data.js';
 import {
   BASE_WEEKS, EXTEND_WEEKS, buildSessions, computeStages, currentWeek, progress, nextSession,
@@ -51,10 +51,13 @@ function activitiesByDate() {
   return m;
 }
 function sessionTitle(s) { return TYPE_INFO[s.type].title; }
+/** Langer Lauf? (Samstag – wirkt erst in der Aufbau-Phase ab Stufe 19) */
+function isLong(s) { return s.type === 'run' && s.dow === LONG_RUN_DOW; }
+function phaseText(st) { const ph = stagePhase(st); return ph ? `Aufbau ${ph}` : 'Grundlagen'; }
 function sessionSubtitle(s, stages) {
   if (s.type === 'run') {
     const st = stages.get(s.id);
-    return st ? `Stufe ${st}: ${stageLabel(st)}` : 'Laufeinheit';
+    return st ? `Stufe ${st}: ${stageLabel(st, isLong(s))}` : 'Laufeinheit';
   }
   if (s.type === 'strength') return `ca. 20 Minuten · Programm ${s.program}`;
   if (s.type === 'yoga') return 'ca. 20 Minuten';
@@ -161,7 +164,7 @@ function renderNav(route) {
   document.body.classList.remove('no-nav');
   const top = route.split('/')[0];
   const active = { einheit: 'plan', timer: 'plan', uebung: 'uebungen' }[top] || top;
-  nav.innerHTML = `<div class="brand"><span class="brand-logo">👟</span><span>Mayleens<br><b>Lauftrainer</b></span></div>` +
+  nav.innerHTML = `<div class="brand"><span class="brand-logo">👟</span><span>Mayleens<br><b>Lauftrainer</b><br><small class="brand-by">Stolli</small></span></div>` +
     NAV.map(([id, icon, label]) =>
       `<a href="#/${id}" class="nav-item ${active === id ? 'active' : ''}"><span class="nav-icon">${icon}</span><span class="nav-label">${label}</span></a>`).join('');
 }
@@ -202,6 +205,7 @@ function viewWelcome() {
   <section class="welcome">
     <div class="welcome-card">
       <div class="welcome-hero">👟</div>
+      <p class="welcome-brand">Mayleens Lauftrainer<br><small>Stolli</small></p>
       <h1>Willkommen bei deinem Lauftrainer!</h1>
       <p class="lead">Ich bin dein freundlicher Trainer. Zusammen fangen wir ganz entspannt mit dem Laufen an – mit Gehpausen, kleinen Kraft- und Yoga-Einheiten und genug Erholung.</p>
       ${isStandalone() ? '' : `<div class="hint">📲 <b>Tipp:</b> Lege den Lauftrainer zuerst auf den Home-Bildschirm (in Safari auf <b>Teilen</b> ⬆︎ › <b>Zum Home-Bildschirm</b>) und richte ihn dann dort ein. Nur so bleiben deine Daten dauerhaft gespeichert.</div>`}
@@ -394,16 +398,19 @@ function viewSession(id) {
   let body = '';
   if (s.type === 'run') {
     const st = stages.get(s.id) || s.planned;
-    const segs = stageSegments(st);
+    const lg = isLong(s);
+    const segs = stageSegments(st, lg);
+    const goal = stageIsGoal(st, lg);
     body = `
       <div class="run-summary">
         <div class="stage-badge">Stufe<br><b>${st}</b><span>von ${MAX_STAGE}</span></div>
-        <div><h3>${esc(stageLabel(st))}</h3>
-        <p class="muted">Insgesamt ca. ${stageTotalMin(st)} Minuten, davon ${String(stageRunMin(st)).replace('.', ',')} Minuten laufen.</p></div>
+        <div><p class="small muted">${phaseText(st)}</p><h3>${esc(stageLabel(st, lg))}</h3>
+        <p class="muted">Insgesamt ca. ${stageTotalMin(st, lg)} Minuten, davon ${String(stageRunMin(st, lg)).replace('.', ',')} Minuten laufen.</p></div>
       </div>
       <ol class="seg-list">
         ${segs.map(g => `<li class="seg ${g.type}"><span>${SEG_LABEL[g.type]}</span><span>${String(g.min).replace('.', ',')} Min.</span></li>`).join('')}
       </ol>
+      ${goal ? `<p class="hint">🎯 <b>Heute ist dein Ziellauf: ${stagePhase(st)}!</b> Die Minuten sind nur ein Richtwert – lauf ganz gemütlich, bis deine Apple Watch ${stagePhase(st)} anzeigt. Bist du schon früher dort: super, dann darfst du aufhören. Kurze Gehpausen sind völlig in Ordnung.</p>` : ''}
       <p class="small muted">Lauf so langsam, dass du dich noch unterhalten könntest. Gehpausen gehören dazu!</p>
       ${s.status === 'open' ? `<a class="btn primary big" href="#/timer/${s.id}">⏱ Intervall-Timer starten</a>` : ''}`;
   } else if (s.type === 'strength' || s.type === 'yoga') {
@@ -536,7 +543,7 @@ function viewTimer(id) {
   <a class="back" href="#/einheit/${s.id}">‹ Zurück zur Einheit</a>
   <section class="timer" id="timer">
     <div class="timer-top">
-      <span class="muted">Stufe ${st} · ${esc(stageLabel(st))}</span>
+      <span class="muted">Stufe ${st} · ${esc(stageLabel(st, isLong(s)))}</span>
     </div>
     <div class="timer-seg" id="t-seg">Bereit?</div>
     <div class="timer-big" id="t-big">00:00</div>
@@ -559,7 +566,7 @@ function mountTimer(id) {
   const { s, stages } = findSession(id);
   if (!s || s.type !== 'run') return;
   const st = stages.get(s.id) || s.planned;
-  const segs = stageSegments(st);
+  const segs = stageSegments(st, isLong(s));
   const $ = sel => document.querySelector(sel);
   const list = $('#t-list');
   list.innerHTML = segs.map((g, i) => `<li class="seg ${g.type}" data-i="${i}"><span>${SEG_LABEL[g.type]}</span><span>${String(g.min).replace('.', ',')} Min.</span></li>`).join('');
@@ -781,6 +788,7 @@ async function viewSettings(tab) {
   } else {
     body = `
     <article class="card"><h2>Mayleens Lauftrainer</h2>
+      <p class="muted">Stolli</p>
       <p>Version ${VERSION} · iPad-Ausgabe</p>
       <p>Dein freundlicher Trainer für einen entspannten Laufeinstieg – mit Gehpausen, Kraft, Yoga und genug Erholung.</p>
     </article>
@@ -844,7 +852,7 @@ const actions = {
   'video-del': async el => { delete state.videos[el.dataset.id]; await save(); render(); },
   import: () => doImport(),
   extend: async () => {
-    if (!await confirmDialog('Plan verlängern?', `Dein Plan wird um ${EXTEND_WEEKS} Wochen verlängert. In den neuen Wochen hältst du dein Niveau und baust es weiter aus.`, 'Verlängern')) return;
+    if (!await confirmDialog('Plan verlängern?', `Dein Plan wird um ${EXTEND_WEEKS} Wochen verlängert. Danach geht es Schritt für Schritt weiter: erst bis 5 km, dann bis 10 km und schließlich bis 15 km – mit einem lockeren Lauf am Montag und Donnerstag und einem langen Lauf am Samstag.`, 'Verlängern')) return;
     state.profile.weeks += EXTEND_WEEKS; await save(); render(); toast(`Plan um ${EXTEND_WEEKS} Wochen verlängert.`);
   },
   restart: () => {

@@ -76,6 +76,7 @@ body.no-nav #nav { display: none; }
   }
   .brand { display: flex; gap: 10px; align-items: center; padding: 6px 10px 22px; font-size: 16px; line-height: 1.2; }
   .brand-logo { font-size: 32px; }
+  .brand-by { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .04em; }
   .nav-item { flex: 0 0 auto; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; font-size: 16px; }
   .nav-item.active { background: var(--primary-soft); }
   #main { margin-left: var(--nav-w); padding-left: 36px; padding-right: 36px; padding-bottom: 40px; }
@@ -330,3 +331,6 @@ span.ex-area.area-yoga { color: var(--yoga); }
   h1 { font-size: 26px; }
 }
 .ring-fg.zero { display: none; }
+
+.welcome-brand { margin: 0 0 6px; font-weight: 700; color: var(--primary); line-height: 1.25; }
+.welcome-brand small { font-weight: 500; color: var(--muted); font-size: 13px; letter-spacing: .04em; }

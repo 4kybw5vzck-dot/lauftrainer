@@ -1,10 +1,12 @@
 // Mayleens Lauftrainer – feste Inhalte: Laufstufen, Übungen, Einheiten, Sprüche
 // Alles lokal, nichts wird nachgeladen.
 
-export const VERSION = '2.0.0';
+export const VERSION = '2.1.0';
 
-// 18 Laufstufen. Jede Stufe: Liste von Blöcken [laufenMin, gehenMin] × Wiederholungen
-// oder freie Segmentliste. Aufwärmen und Ausgehen (je 5 Min. Gehen) kommen immer dazu.
+// Laufstufen. Stufen 1–18 (Grundlagen, 10 Wochen): Blöcke [laufenMin, gehenMin] × Wiederholungen
+// oder freie Segmentliste. Stufen ab 19 (Aufbau 5 km → 10 km → 15 km): je Woche eine Stufe mit
+// lockerem Lauf (Mo/Do, `easy`) und langem Lauf (Sa, `long`), jeweils am Stück.
+// Aufwärmen und Ausgehen (je 5 Min. Gehen) kommen immer dazu.
 export const STAGES = [
   { n: 1,  reps: 6, run: 1,   walk: 2 },
   { n: 2,  reps: 6, run: 1.5, walk: 2 },
@@ -24,7 +26,33 @@ export const STAGES = [
   { n: 16, custom: [['run', 25]] },
   { n: 17, custom: [['run', 27]] },
   { n: 18, custom: [['run', 30]] },
+  // Aufbau 1: Ziel 5 km
+  { n: 19, phase: '5 km',  easy: 30, long: 33 },
+  { n: 20, phase: '5 km',  easy: 30, long: 36 },
+  { n: 21, phase: '5 km',  easy: 30, long: 38 },
+  { n: 22, phase: '5 km',  easy: 30, long: 40, goal: true },
+  // Aufbau 2: Ziel 10 km
+  { n: 23, phase: '10 km', easy: 30, long: 45 },
+  { n: 24, phase: '10 km', easy: 35, long: 50 },
+  { n: 25, phase: '10 km', easy: 35, long: 55 },
+  { n: 26, phase: '10 km', easy: 35, long: 60 },
+  { n: 27, phase: '10 km', easy: 40, long: 65 },
+  { n: 28, phase: '10 km', easy: 40, long: 70 },
+  { n: 29, phase: '10 km', easy: 40, long: 75, goal: true },
+  // Aufbau 3: Ziel 15 km
+  { n: 30, phase: '15 km', easy: 40, long: 80 },
+  { n: 31, phase: '15 km', easy: 45, long: 85 },
+  { n: 32, phase: '15 km', easy: 45, long: 90 },
+  { n: 33, phase: '15 km', easy: 45, long: 95 },
+  { n: 34, phase: '15 km', easy: 45, long: 100 },
+  { n: 35, phase: '15 km', easy: 50, long: 105 },
+  { n: 36, phase: '15 km', easy: 50, long: 110 },
+  { n: 37, phase: '15 km', easy: 50, long: 115, goal: true },
 ];
+/** Letzte Stufe der Grundlagen-Phase (10 Wochen). */
+export const BASE_STAGES = 18;
+/** Wochentag des langen Laufs in der Aufbau-Phase (0 = Montag … 5 = Samstag). */
+export const LONG_RUN_DOW = 5;
 export const MAX_STAGE = STAGES.length;
 export const WARMUP_MIN = 5;
 export const COOLDOWN_MIN = 5;
@@ -33,9 +61,18 @@ function fmtMin(m) {
   return (Number.isInteger(m) ? String(m) : String(m).replace('.', ',')) + ' Min.';
 }
 
-/** Kernteil einer Stufe als Segmente [{type:'run'|'walk', min}] (ohne Auf-/Abwärmen) */
-export function stageCore(n) {
-  const s = STAGES[Math.min(Math.max(n, 1), MAX_STAGE) - 1];
+function stageDef(n) { return STAGES[Math.min(Math.max(n, 1), MAX_STAGE) - 1]; }
+
+/** Phase einer Stufe: null (Grundlagen) oder '5 km' | '10 km' | '15 km'. */
+export function stagePhase(n) { return stageDef(n).phase || null; }
+/** Ist dies die Zielstufe einer Aufbau-Phase – und zwar der lange Lauf? */
+export function stageIsGoal(n, long = false) { const s = stageDef(n); return !!(s.goal && long); }
+
+/** Kernteil einer Stufe als Segmente [{type:'run'|'walk', min}] (ohne Auf-/Abwärmen).
+ *  `long` = langer Lauf am Samstag (nur in der Aufbau-Phase relevant). */
+export function stageCore(n, long = false) {
+  const s = stageDef(n);
+  if (s.phase) return [{ type: 'run', min: long ? s.long : s.easy }];
   if (s.custom) return s.custom.map(([type, min]) => ({ type, min }));
   const out = [];
   for (let i = 0; i < s.reps; i++) {
@@ -46,16 +83,20 @@ export function stageCore(n) {
 }
 
 /** Komplette Einheit mit Aufwärmen und Ausgehen */
-export function stageSegments(n) {
+export function stageSegments(n, long = false) {
   return [
     { type: 'warmup', min: WARMUP_MIN },
-    ...stageCore(n),
+    ...stageCore(n, long),
     { type: 'cooldown', min: COOLDOWN_MIN },
   ];
 }
 
-export function stageLabel(n) {
-  const s = STAGES[Math.min(Math.max(n, 1), MAX_STAGE) - 1];
+export function stageLabel(n, long = false) {
+  const s = stageDef(n);
+  if (s.phase) {
+    if (long) return `${s.goal ? '🎯 ' : ''}Langer Lauf: ${fmtMin(s.long)} am Stück${s.goal ? ` – Ziel ${s.phase}` : ''}`;
+    return `Lockerer Lauf: ${fmtMin(s.easy)} am Stück`;
+  }
   if (s.custom) {
     if (s.custom.length === 1) return `${fmtMin(s.custom[0][1])} am Stück laufen`;
     return s.custom.map(([t, m]) => `${fmtMin(m)} ${t === 'run' ? 'laufen' : 'gehen'}`).join(' · ');
@@ -63,12 +104,12 @@ export function stageLabel(n) {
   return `${s.reps} × (${fmtMin(s.run)} laufen + ${fmtMin(s.walk)} gehen)`;
 }
 
-export function stageTotalMin(n) {
-  return stageSegments(n).reduce((a, s) => a + s.min, 0);
+export function stageTotalMin(n, long = false) {
+  return stageSegments(n, long).reduce((a, s) => a + s.min, 0);
 }
 
-export function stageRunMin(n) {
-  return stageCore(n).filter(s => s.type === 'run').reduce((a, s) => a + s.min, 0);
+export function stageRunMin(n, long = false) {
+  return stageCore(n, long).filter(s => s.type === 'run').reduce((a, s) => a + s.min, 0);
 }
 
 // Wochenstruktur: 0 = Montag … 6 = Sonntag

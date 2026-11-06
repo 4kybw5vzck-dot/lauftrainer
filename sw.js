@@ -1,6 +1,6 @@
 // Service Worker: speichert die App-Dateien, damit der Lauftrainer offline startet.
 // Es werden ausschließlich eigene Dateien zwischengespeichert – keine Nutzerdaten.
-const CACHE = 'lauftrainer-v2.0.0';
+const CACHE = 'lauftrainer-v2.1.0';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/data.js', './js/db.js', './js/plan.js', './js/importer.js', './js/timer.js',
