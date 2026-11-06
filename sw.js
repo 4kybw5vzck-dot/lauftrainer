@@ -1,6 +1,6 @@
 // Service Worker: speichert die App-Dateien, damit der Lauftrainer offline startet.
 // Es werden ausschließlich eigene Dateien zwischengespeichert – keine Nutzerdaten.
-const CACHE = 'lauftrainer-v2.1.0';
+const CACHE = 'lauftrainer-v2.1.1';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/data.js', './js/db.js', './js/plan.js', './js/importer.js', './js/timer.js',
@@ -8,7 +8,8 @@ const FILES = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' umgeht den Browser-Zwischenspeicher, damit wirklich die neuen Dateien geladen werden.
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -23,7 +24,7 @@ self.addEventListener('fetch', e => {
   // Cache zuerst, im Hintergrund aktualisieren
   e.respondWith(caches.open(CACHE).then(async cache => {
     const hit = await cache.match(req, { ignoreSearch: true });
-    const net = fetch(req).then(res => {
+    const net = fetch(req, { cache: 'no-cache' }).then(res => {
       if (res && res.ok && res.type === 'basic') cache.put(req, res.clone());
       return res;
     }).catch(() => null);

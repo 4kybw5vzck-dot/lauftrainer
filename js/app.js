@@ -927,7 +927,9 @@ document.addEventListener('click', e => {
 function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   if (!(location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) return;
-  navigator.serviceWorker.register('sw.js').then(reg => {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    // Beim Zurückkehren in die App nach Updates schauen (iPadOS lädt Home-Bildschirm-Apps selten neu)
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
     reg.addEventListener('updatefound', () => {
       const nw = reg.installing;
       nw && nw.addEventListener('statechange', () => {

@@ -1,7 +1,7 @@
 ---
 title: "Mayleens Lauftrainer"
 subtitle: "Stolli · Handbuch – iPad-Ausgabe: Einrichtung, Bedienung, Apple Watch und Datenschutz"
-version: "Version 2.1.0 · November 2026"
+version: "Version 2.1.1 · November 2026"
 ---
 
 # Willkommen!

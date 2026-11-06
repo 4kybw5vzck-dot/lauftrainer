@@ -1,7 +1,7 @@
 // Mayleens Lauftrainer – feste Inhalte: Laufstufen, Übungen, Einheiten, Sprüche
 // Alles lokal, nichts wird nachgeladen.
 
-export const VERSION = '2.1.0';
+export const VERSION = '2.1.1';
 
 // Laufstufen. Stufen 1–18 (Grundlagen, 10 Wochen): Blöcke [laufenMin, gehenMin] × Wiederholungen
 // oder freie Segmentliste. Stufen ab 19 (Aufbau 5 km → 10 km → 15 km): je Woche eine Stufe mit
